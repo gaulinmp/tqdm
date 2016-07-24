@@ -38,6 +38,8 @@ def tqdm(*args, **kwargs):
         # This is the deferred notebook check, detailed above.
         return _tqdm_notebook(*args, **kwargs)
     return _tqdm(*args, **kwargs)
+# Hack to make tab-complete documentation work in ipython notebook
+tqdm.__doc__ = _tqdm.__init__.__doc__
 
 
 def tqdm_notebook(*args, **kwargs):  # pragma: no cover
