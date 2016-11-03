@@ -95,7 +95,6 @@ def _environ_cols_windows(fp):  # pragma: no cover
 def _environ_cols_tput(*args):  # pragma: no cover
     """ cygwin xterm (windows) """
     try:
-        import subprocess
         import shlex
         cols = int(subprocess.check_call(shlex.split('tput cols')))
         # rows = int(subprocess.check_call(shlex.split('tput lines')))
@@ -107,12 +106,6 @@ def _environ_cols_tput(*args):  # pragma: no cover
 
 def _environ_cols_linux(fp):  # pragma: no cover
 
-    # import os
-    # if fp is None:
-    #     try:
-    #         fp = os.open(os.ctermid(), os.O_RDONLY)
-    #     except:
-    #         pass
     try:
         from termios import TIOCGWINSZ
         from fcntl import ioctl

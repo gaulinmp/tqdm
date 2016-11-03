@@ -1,7 +1,6 @@
 import sys
 import subprocess
 from tqdm import main, TqdmKeyError, TqdmTypeError
-from copy import deepcopy
 
 from tests_tqdm import with_setup, pretest, posttest, _range, closing, UnicodeIO
 
@@ -29,10 +28,7 @@ def test_main():
     assert (ls_out in res.replace('\r\n', '\n'))
 
     # semi-fake test which gets coverage:
-    try:
-        _SYS = (deepcopy(sys.stdin), deepcopy(sys.argv))
-    except:
-        pass
+    _SYS = sys.stdin, sys.argv
 
     with closing(UnicodeIO()) as sys.stdin:
         sys.argv = ['', '--desc', 'Test CLI delims',
@@ -41,11 +37,22 @@ def test_main():
         sys.stdin.seek(0)
         main()
 
-    sys.stdin = map(str, _range(int(1e3)))
+    IN_DATA_LIST = map(str, _range(int(1e3)))
+    sys.stdin = IN_DATA_LIST
     sys.argv = ['', '--desc', 'Test CLI pipes',
                 '--ascii', 'True', '--unit_scale', 'True']
     import tqdm.__main__  # NOQA
 
+    IN_DATA = '\0'.join(IN_DATA_LIST)
+    with closing(UnicodeIO()) as sys.stdin:
+        sys.stdin.write(IN_DATA)
+        sys.stdin.seek(0)
+        sys.argv = ['', '--ascii', '--bytes']
+        with closing(UnicodeIO()) as fp:
+            main(fp=fp)
+            assert (str(len(IN_DATA)) in fp.getvalue())
+
+    sys.stdin = IN_DATA_LIST
     sys.argv = ['', '-ascii', '--unit_scale', 'False',
                 '--desc', 'Test CLI errors']
     main()
@@ -85,7 +92,4 @@ def test_main():
             pass
 
     # clean up
-    try:
-        sys.stdin, sys.argv = _SYS
-    except:
-        pass
+    sys.stdin, sys.argv = _SYS
